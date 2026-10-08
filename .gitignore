@@ -1,0 +1,62 @@
+# ------------------------------------------------------------------------------
+# Terraform
+# ------------------------------------------------------------------------------
+# Dossier d'initialisation des plugins
+.terraform/
+.terraform.lock.hcl
+
+# Fichiers d'état (State files - peuvent contenir des données sensibles)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Fichiers de variables contenant des identifiants / secrets
+*.tfvars
+*.tfvars.json
+
+# Ne pas ignorer les fichiers d'exemples
+!*.tfvars.example
+
+# Logs de crash Terraform
+crash.log
+crash.*.log
+
+# Fichiers d'override locaux
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Configuration CLI
+.terraformrc
+terraform.rc
+
+# ------------------------------------------------------------------------------
+# Python & Environnements
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+ENV/
+
+# ------------------------------------------------------------------------------
+# IDEs & Éditeurs
+# ------------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------------------------
+# Système d'exploitation
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
