@@ -30,8 +30,7 @@ resource "google_compute_security_policy" "armor" {
       }
     }
   }
-
-  dynamic "rule" {
+dynamic "rule" {
     for_each = var.enable_waf_sqli ? [1] : []
     content {
       priority    = 1000
