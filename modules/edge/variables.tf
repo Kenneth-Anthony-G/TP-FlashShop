@@ -23,7 +23,7 @@ variable "health_check_port" {
 variable "health_check_path" {
   description = "Chemin testé par la sonde (à adapter à startup.sh)"
   type        = string
-  default     = "/health"
+  default     = "/healthz"
 }
 
 variable "armor_rules" {

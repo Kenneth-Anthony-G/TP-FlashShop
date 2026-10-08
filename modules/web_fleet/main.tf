@@ -1,25 +1,33 @@
 # Module Web Fleet (Instance Templates, Managed Instance Groups, Autoscaling, Autohealing)
 
-resource "google_compute_instance_template" "lab-shop_template" {
-  name        = "lab-shop-instance"
+resource "google_compute_instance_template" "lab_shop_template" {
+  name_prefix        = "lab-shop-"
   description = "This template is used to create app server instances."
 
-  tags = ["instance-template", "lab-shop"]
+  tags = [var.web_network_tag]
 
   instance_description = "description assigned to instances"
-  machine_type         = "e2-micro"
+  machine_type         = var.machine_type
   can_ip_forward       = false
 
   // Create a new boot disk from an image
   disk {
-    source_image      = "debian-cloud/debian-11"
+    source_image      = "debian-cloud/debian-12"
     auto_delete       = true
     boot              = true
     disk_size_gb      = 10
   }
+  metadata = {
+    app-version = var.app_version
+  }
+
+  # Script de démarrage FlashShop
+  metadata_startup_script = file("${path.module}/../../startup.sh")
+
 
   network_interface {
-    network = "default"
+    network = var.network
+    subnetwork = var.subnetwork
   }
 
 lifecycle {
@@ -27,7 +35,7 @@ lifecycle {
     }
 }
 
-resource "google_compute_health_check" "lab-shop_hc" {
+resource "google_compute_health_check" "lab_shop_hc" {
   name                = "lab-shop-health-check"
   check_interval_sec  = 5
   timeout_sec         = 5
@@ -42,15 +50,16 @@ resource "google_compute_health_check" "lab-shop_hc" {
 
 
 # Regional Managed Instance Group (MIG) répartissant les VMs sur la région
-resource "google_compute_region_instance_group_manager" "lab-shop_mig" {
+resource "google_compute_region_instance_group_manager" "lab_shop_mig" {
   name               = "lab-shop-mig"
   base_instance_name = "lab-shop"
-  region             = "europe-west9"
-  distribution_policy_zones = ["europe-west9-a", "europe-west9-b", "europe-west9-c"]    
+  region             = var.region  
   target_size        = 3
+  # Force une répartition égale stricte (1 VM par zone)
+  # distribution_policy_target_shape = "EVEN"
 
   version {
-    instance_template = google_compute_instance_template.lab-shop_template.id
+    instance_template = google_compute_instance_template.lab_shop_template.id
   }
 
   named_port {
@@ -59,16 +68,19 @@ resource "google_compute_region_instance_group_manager" "lab-shop_mig" {
   }
 
   auto_healing_policies {
-    health_check      = google_compute_health_check.lab-shop_hc.id
-    initial_delay_sec = 300
+    health_check      = google_compute_health_check.lab_shop_hc.id
+    initial_delay_sec = 120
   }
+  lifecycle { 
+    ignore_changes = [target_size] 
+    }
 }
 
 # Regional Autoscaler : adapte dynamiquement le nombre d'instances selon la charge CPU
-resource "google_compute_region_autoscaler" "lab-autoscaler" {
+resource "google_compute_region_autoscaler" "lab_autoscaler" {
   name   = "lab-autoscaler"
-  region = "europe-west9"
-  target = google_compute_region_instance_group_manager.lab-shop_mig.id
+  region = var.region
+  target = google_compute_region_instance_group_manager.lab_shop_mig.id
 
   autoscaling_policy {
     min_replicas    = 3
@@ -76,7 +88,7 @@ resource "google_compute_region_autoscaler" "lab-autoscaler" {
     cooldown_period = 60
 
     cpu_utilization {
-      target = 0.3 # Cible 60% d'utilisation CPU moyenne
+      target = 0.6 # Cible 60% d'utilisation CPU moyenne
     }
   }
 }
