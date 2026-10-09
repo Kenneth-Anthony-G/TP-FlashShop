@@ -19,3 +19,18 @@ module "edge" {
   name_prefix    = "flashshop-lab"
   instance_group = module.web_fleet.instance_group
 }
+
+module "observability" {
+  source = "../../modules/observability"
+
+  # Variables de configuration de l'alerte
+  cpu_threshold_percent = 50
+  duration_seconds      = "60s"
+  notification_email    = var.notification_email
+
+  # Dépendance implicite pour s'assurer que le réseau est prêt
+  depends_on = [
+    module.network
+  ]
+}
+

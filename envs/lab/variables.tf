@@ -4,6 +4,12 @@ variable "project_id" {
   default     = "flashop-prod"
 }
 
+variable "notification_email" {
+  description = "Adresse e-mail pour la réception des alertes d'observabilité"
+  type        = string
+  default     = "zoebocquet26@gmail.com"
+}
+
 variable "region" {
   description = "Région GCP"
   type        = string
